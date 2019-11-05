@@ -76,25 +76,25 @@ int BSTSearch (tBSTNodePtr RootPtr, char K, int *Content)	{
 
 	if (RootPtr == NULL)
 	{
-		return 0;
-	} // RootPtr = NULL
+		return FALSE;
+	}
 	else
 	{
 		if (RootPtr->Key == K)
 		{
-			*Content = RootPtr->Key;
-			return 1;
-		} // RootPtr = K
+			*Content = RootPtr->BSTNodeCont;
+			return TRUE;
+		}
 		else
 		{
 			if (RootPtr->Key > K)
 			{
 				return (BSTSearch(RootPtr->LPtr, K, Content));
-			} // RootPtr->Key > K
+			}
 			else
 			{
 				return (BSTSearch(RootPtr->RPtr, K, Content));
-			} //RootPtr->Key < K
+			}
 		} // RootPtr != K
 	}
 	
@@ -118,9 +118,33 @@ void BSTInsert (tBSTNodePtr* RootPtr, char K, int Content)	{
 ** příklad, na kterém si chceme ukázat eleganci rekurzivního zápisu.
 **/
 
-	
-
-	 solved = FALSE;		  /* V případě řešení smažte tento řádek! */
+	if (*RootPtr == NULL)
+	{
+		tBSTNodePtr new_root = (tBSTNodePtr) malloc(sizeof(struct tBSTNode));
+		if (new_root == NULL)
+		{
+			return;
+		}
+		
+		new_root->BSTNodeCont = Content;
+		new_root->Key = K;
+		new_root->LPtr = NULL;
+		new_root->RPtr = NULL;
+		*RootPtr = new_root;
+		return;
+	}
+	else if ((*RootPtr)->Key == K)
+	{
+		(*RootPtr)->BSTNodeCont = Content;
+	}
+	else if ((*RootPtr)->Key > K)
+	{
+		BSTInsert(&(*RootPtr)->LPtr, K, Content);
+	}
+	else
+	{
+		BSTInsert(&(*RootPtr)->RPtr, K, Content);
+	}
 
 }
 
@@ -137,10 +161,19 @@ void ReplaceByRightmost (tBSTNodePtr PtrReplaced, tBSTNodePtr *RootPtr) {
 ** přečtěte si komentář k funkci BSTDelete().
 **/
 
-	
+	if ((*RootPtr)->RPtr != NULL)
+	{
+		ReplaceByRightmost(PtrReplaced, &(*RootPtr)->RPtr);
+	}
+	else	// No more right son's
+	{
+		PtrReplaced->BSTNodeCont = (*RootPtr)->BSTNodeCont;
+        PtrReplaced->Key = (*RootPtr)->Key;
 
-	 solved = FALSE;		  /* V případě řešení smažte tento řádek! */
-
+		tBSTNodePtr to_delete = *RootPtr;
+		*RootPtr = (*RootPtr)->LPtr;
+		free(to_delete);
+	}
 }
 
 void BSTDelete (tBSTNodePtr *RootPtr, char K) 		{
@@ -156,10 +189,51 @@ void BSTDelete (tBSTNodePtr *RootPtr, char K) 		{
 ** pomocné funkce ReplaceByRightmost.
 **/
 
-	
+	if ((*RootPtr) == NULL)
+	{
+		return;
+	}
 
-	 solved = FALSE;		  /* V případě řešení smažte tento řádek! */
+	if ((*RootPtr)->Key < K)
+	{
+		BSTDelete(&(*RootPtr)->RPtr, K);
+	}
+	else if ((*RootPtr)->Key > K)
+	{
+		BSTDelete(&(*RootPtr)->LPtr, K);
+	}
+	else 	// (*RootPtr)->Key == K
+	{
+		tBSTNodePtr to_delete;
 
+		if ((*RootPtr)->RPtr == NULL)	// Without right son
+		{
+			to_delete = *RootPtr;
+			if ((*RootPtr)->LPtr == NULL) // Without left son
+			{
+				// Without sons
+				*RootPtr = NULL;
+			}
+			else	// Have left son
+			{
+				*RootPtr = (*RootPtr)->LPtr;
+			}
+			free(to_delete);
+		}
+		else	// Have right son
+		{
+			if ((*RootPtr)->LPtr == NULL) // Without left son
+			{
+				to_delete = *RootPtr;
+				*RootPtr = (*RootPtr)->RPtr;
+				free(to_delete);
+			}
+			else	// Have both sons
+			{
+				ReplaceByRightmost(*RootPtr, &(*RootPtr)->LPtr);
+			}	
+		}
+	}
 }
 
 void BSTDispose (tBSTNodePtr *RootPtr) {
@@ -171,9 +245,14 @@ void BSTDispose (tBSTNodePtr *RootPtr) {
 ** funkce.
 **/
 	
+	if ((*RootPtr != NULL))
+	{
+		BSTDispose(&(*RootPtr)->LPtr);
+		BSTDispose(&(*RootPtr)->RPtr);
 
-	 solved = FALSE;		  /* V případě řešení smažte tento řádek! */
-
+		free(*RootPtr);
+		*RootPtr = NULL;
+	}
 }
 
 /* konec c401.c */
