@@ -74,10 +74,30 @@ int BSTSearch (tBSTNodePtr RootPtr, char K, int *Content)	{
 ** pomocnou funkci.
 **/
 
+	if (RootPtr == NULL)
+	{
+		return 0;
+	} // RootPtr = NULL
+	else
+	{
+		if (RootPtr->Key == K)
+		{
+			*Content = RootPtr->Key;
+			return 1;
+		} // RootPtr = K
+		else
+		{
+			if (RootPtr->Key > K)
+			{
+				return (BSTSearch(RootPtr->LPtr, K, Content));
+			} // RootPtr->Key > K
+			else
+			{
+				return (BSTSearch(RootPtr->RPtr, K, Content));
+			} //RootPtr->Key < K
+		} // RootPtr != K
+	}
 	
-
-	 solved = FALSE;		  /* V případě řešení smažte tento řádek! */
-
 }
 
 
