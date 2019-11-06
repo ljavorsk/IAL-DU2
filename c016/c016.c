@@ -66,7 +66,10 @@ int hashCode ( tKey key ) {
 
 void htInit ( tHTable* ptrht ) {
 
- solved = 0; /*v pripade reseni, smazte tento radek!*/
+	for (int i = 0; i < HTSIZE; i++) 
+	{
+        (*ptrht)[i] = NULL;
+    }
 }
 
 /* TRP s explicitně zřetězenými synonymy.
@@ -78,7 +81,12 @@ void htInit ( tHTable* ptrht ) {
 
 tHTItem* htSearch ( tHTable* ptrht, tKey key ) {
 
- solved = 0; /*v pripade reseni, smazte tento radek!*/
+	tHTItem *element_found = (*ptrht)[hashCode(key)];
+    while (element_found != NULL && strcmp(element_found->key,key))
+	{
+		element_found = element_found->ptrnext;
+	}
+    return element_found;
 }
 
 /*
@@ -95,7 +103,23 @@ tHTItem* htSearch ( tHTable* ptrht, tKey key ) {
 
 void htInsert ( tHTable* ptrht, tKey key, tData data ) {
 
- solved = 0; /*v pripade reseni, smazte tento radek!*/
+	tHTItem *element_found = htSearch(ptrht,key);
+    if (element_found != NULL)
+	{
+		element_found->data = data;
+	}
+    else
+	{
+        tHTItem *new_elem = (tHTItem *) malloc(sizeof(tHTItem));
+        if (new_elem == NULL)	// Malloc failed
+		{	
+            return;
+        }
+        new_elem->key = key;
+        new_elem->data = data;
+        new_elem->ptrnext = (*ptrht)[hashCode(key)];
+        (*ptrht)[hashCode(key)] = new_elem;
+    }
 }
 
 /*
@@ -109,7 +133,12 @@ void htInsert ( tHTable* ptrht, tKey key, tData data ) {
 
 tData* htRead ( tHTable* ptrht, tKey key ) {
 
- solved = 0; /*v pripade reseni, smazte tento radek!*/
+	tHTItem *element_found = htSearch(ptrht,key);
+    if (element_found != NULL)
+	{
+		return &element_found->data;
+	}
+    return NULL;
 }
 
 /*
@@ -124,7 +153,29 @@ tData* htRead ( tHTable* ptrht, tKey key ) {
 
 void htDelete ( tHTable* ptrht, tKey key ) {
 
- solved = 0; /*v pripade reseni, smazte tento radek!*/
+	tHTItem *prev_elem = NULL;
+    tHTItem *element_found = (*ptrht)[hashCode(key)];
+
+    while (element_found != NULL && strcmp(element_found->key,key))
+	{
+        prev_elem = element_found;
+        element_found = element_found->ptrnext;
+    }
+
+    if (element_found == NULL)	// Doesn't exist
+	{
+		return;
+	}
+    if (prev_elem == NULL)	// First element
+	{
+		(*ptrht)[hashCode(key)] = element_found->ptrnext;
+	}
+    else
+	{
+		prev_elem->ptrnext = element_found->ptrnext;
+	}
+
+    free(element_found);
 }
 
 /* TRP s explicitně zřetězenými synonymy.
@@ -134,5 +185,16 @@ void htDelete ( tHTable* ptrht, tKey key ) {
 
 void htClearAll ( tHTable* ptrht ) {
 
- solved = 0; /*v pripade reseni, smazte tento radek!*/
+	tHTItem *element = NULL;
+    tHTItem *next_elem = NULL;
+
+    for (int i = 0; i < HTSIZE; i++){
+        element = (*ptrht)[i];
+        while (element != NULL){	// Go through table and free them all
+            next_elem = element->ptrnext;
+            free(element);
+            element = next_elem;
+        }
+        (*ptrht)[i] = NULL;
+    }
 }
